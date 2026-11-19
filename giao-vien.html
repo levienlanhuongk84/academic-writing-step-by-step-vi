@@ -191,6 +191,12 @@
   .score small { font-size: .7em; font-weight: 500; }
   .score.gv { background: var(--good-soft); color: var(--good); }
   .stale { color: var(--orange-ink); font-weight: 500; }
+  .wait { font-size: .88em; color: var(--ink-2); display: flex; align-items: center; gap: 8px; }
+  .wait.fail { color: var(--orange-ink); }
+  .spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--purple-soft); border-top-color: var(--purple); animation: spin .8s linear infinite; flex: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
+  .alt { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: .9em; } .alt .m { display: block; color: var(--purple); font-size: .9em; }
   .crit { border-collapse: collapse; width: auto; min-width: min(100%, 560px); font-size: .86em; border-radius: 8px; }
   .crit th, .crit td { padding: 4px 8px; text-align: center; } .crit td:first-child, .crit th:first-child { text-align: left; }
   .crit .ev { text-align: left; color: var(--ink-2); font-size: .92em; min-width: 200px; }
@@ -283,7 +289,12 @@
         <li>Câu (Cấp 3–5, câu chủ đề, câu kết): rubric câu S1–S5, mỗi tiêu chí 0–2, tổng /10.</li>
         <li>Dàn ý: 3 tiêu chí đầu của rubric đoạn văn (0–5), quy về /10.</li>
         <li>Đoạn văn: rubric đoạn văn 5 tiêu chí × 0–5, quy về /10.</li>
-        <li>Mỗi bài ~10 giây; AI chỉ là bản nháp, điểm GV mới là điểm chốt.</li>
+        <li><b>Tự chấm</b>: học viên bấm Nộp bài → AI chấm sau khoảng 15–30 giây, không cần bấm gì.</li>
+        <li>Học viên thấy ngay nhận xét AI dưới bài: điểm, lỗi, bản sửa, 2 cách viết khác cùng ý.</li>
+        <li>GV duyệt điểm / nhận xét → học viên thấy thêm dòng "Giáo viên đã duyệt".</li>
+        <li>Học viên sửa và nộp lại → AI tự chấm lại bản mới.</li>
+        <li>Bài AI chấm lỗi 3 lần: hiện nhãn cam, bấm <b>AI chấm</b> để thử lại.</li>
+        <li>AI chỉ là bản nháp, điểm GV mới là điểm chốt.</li>
         <li>AI không nhận tên học viên, chỉ nhận đề và bài viết.</li></ul></div>
       <div class="card"><h3>Xuất và dọn dữ liệu</h3><ul>
         <li><b>Tải CSV</b>: lấy đúng các bài đang lọc, mở bằng Excel.</li>
@@ -376,7 +387,7 @@
   $('#out').onclick = () => { cred = null; rows = []; $('#pw').value = ''; $('#tools').classList.add('hide'); $('#login').classList.remove('hide'); document.body.classList.add('locked'); $('#t-prog').innerHTML = $('#t-list').innerHTML = ''; };
   $('#reload').onclick = () => load();
   $('#ai-all').onclick = async () => {
-    const todo = filtered().filter(r => !r.ai || r.aiStale); if (!todo.length) return;
+    const todo = filtered().filter(r => (!r.ai || r.aiStale) && !r.aiPending); if (!todo.length) return;
     if (!confirm(`AI chấm ${todo.length} bài (khoảng ${Math.ceil(todo.length * 10 / 60)} phút)? Giữ trang mở đến khi xong.`)) return;
     batching = true; $('#ai-all').disabled = true; const b = $('#batch'); b.classList.remove('hide'); let ok = 0, bad = 0;
     for (const [i, r] of todo.entries()) {
@@ -386,6 +397,23 @@
     batching = false; b.textContent = `Xong: AI chấm ${ok} bài` + (bad ? `, ${bad} bài lỗi (bấm lại để chấm tiếp)` : '') + '.'; renderTop();
   };
 
+  let autoT = null;
+  function autoRefresh(on) {
+    if (!on) { clearTimeout(autoT); autoT = null; return; }
+    if (autoT) return;
+    autoT = setTimeout(async () => {
+      autoT = null; if (!cred) return;
+      let fresh = []; try { fresh = (await call({ action: 'list' })).rows || []; } catch (e) { autoRefresh(true); return; }
+      const byId = new Map(fresh.map(x => [x.id, x]));
+      rows.forEach(r => { const x = byId.get(r.id); if (!x || !r.aiPending) return;
+        Object.assign(r, { ai: x.ai, aiStale: x.aiStale, aiPending: x.aiPending, aiError: x.aiError, answer: x.answer, words: x.words, attempts: x.attempts, updatedAt: x.updatedAt, reviewStale: x.reviewStale });
+        const el = document.querySelector(`.sub-item[data-row="${r.id}"]`);
+        if (el && !el.contains(document.activeElement)) redraw(r); });
+      const added = fresh.filter(x => !rows.some(r => r.id === x.id)).length;
+      if (!batching) $('#batch').classList.toggle('hide', !added); if (added && !batching) $('#batch').textContent = `Có ${added} bài mới nộp: bấm Tải lại để xem.`;
+      renderTop();
+    }, 20000);
+  }
   async function load() {
     $('#chips').innerHTML = '<span class="muted">Đang tải…</span>';
     try { rows = (await call({ action: 'list' })).rows || []; }
@@ -409,8 +437,9 @@
     $('#chips').innerHTML = `<span class="chip"><b>${studs.size}</b> học viên</span><span class="chip"><b>${f.length}</b> bài nộp</span>`
       + `<span class="chip"><b>${f.filter(r => r.ai).length}</b> bài AI đã chấm</span><span class="chip"><b>${f.filter(r => r.review).length}</b> bài GV đã duyệt</span>`
       + `<span class="chip"><b>${f.filter(r => r.shown).length}</b> bài đã mở đáp án gợi ý trước khi nộp</span>`;
-    const todo = f.filter(r => !r.ai || r.aiStale).length;
-    $('#ai-all').textContent = todo ? `AI chấm ${todo} bài chưa chấm` : 'AI đã chấm hết'; $('#ai-all').disabled = !todo || batching;
+    const todo = f.filter(r => (!r.ai || r.aiStale) && !r.aiPending).length, waiting = f.filter(r => r.aiPending).length;
+    $('#ai-all').textContent = todo ? `AI chấm ${todo} bài lỗi / chưa chấm` : waiting ? `AI đang tự chấm ${waiting} bài…` : 'AI đã chấm hết'; $('#ai-all').disabled = !todo || batching;
+    autoRefresh(waiting > 0);
     const list = [...studs.values()].sort((a, b) => a.cls.localeCompare(b.cls) || a.name.localeCompare(b.name, 'vi'));
     $('#t-prog').innerHTML = list.length ? `<table><thead><tr><th>Học viên</th><th>Lớp</th>${GROUPS.map(g => `<th>${esc(g[1])}</th>`).join('')}<th>Tổng</th><th>Điểm TB /10</th><th>Nộp gần nhất</th></tr></thead><tbody>`
       + list.map(s => `<tr><td data-l="Học viên"><button class="namebtn" data-k="${esc(s.name)}">${esc(s.name)}</button></td><td data-l="Lớp">${esc(s.cls)}</td>`
@@ -443,6 +472,8 @@
   function markHtml(r) {
     const a = r.ai, v = r.review;
     let h = '';
+    if (r.aiPending) h += `<p class="wait"><span class="spin" aria-hidden="true"></span>${a ? 'Học viên đã nộp lại: AI đang tự chấm bản mới…' : 'AI đang tự chấm (thường 15–30 giây)…'}</p>`;
+    else if (r.aiError) h += `<p class="wait fail">⚠ AI tự chấm chưa được (${esc(r.aiError)}). Bấm "AI chấm" để thử lại.</p>`;
     if (a) {
       const cr = a.criteria || [], multi = (a.items || []).length > 1 || (a.items || []).some(i => i.label);
       const vc = t => t === 'Đúng' ? 'v-ok' : t === 'Gần đúng' ? 'v-mid' : 'v-bad';
@@ -458,18 +489,19 @@
       const ul = xs => (xs || []).length ? '<ul>' + xs.map(x => `<li>${esc(x)}</li>`).join('') + '</ul>' : '<p class="muted" style="margin:0">—</p>';
       h += `<div class="fb2"><div><h5>Làm tốt</h5>${ul(a.strengths_vi)}</div><div><h5>Cần sửa</h5>${ul(a.fixes_vi)}</div><div><h5>Nhận xét chung</h5><p style="margin:0;font-size:.9em">${esc(a.comment_vi)}</p></div></div>`;
       if (a.rewrite) h += `<div><h5 style="margin:0 0 3px;font-size:.8em;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)">Bản sửa gợi ý</h5><div class="rew">${esc(a.rewrite)}</div></div>`;
+      if ((a.alternatives || []).length) h += `<div><h5 style="margin:0 0 3px;font-size:.8em;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)">Cách viết khác cùng ý (học viên thấy)</h5><ol class="alt">${a.alternatives.map(x => `<li>${esc(x.text)}${x.method_vi ? `<span class="m">${esc(x.method_vi)}</span>` : ''}</li>`).join('')}</ol></div>`;
       if ((a.flags || []).length) h += `<div class="flags">⚠ ${a.flags.map(esc).join(' · ')}</div>`;
     }
     if (a || v) h += `<div class="rv"><label>Điểm GV /10<input class="rv-score" type="number" min="0" max="10" step="0.25" value="${v && v.score10 != null ? v.score10 : (a ? a.score10 : '')}"></label>
         <label class="note-l">Nhận xét GV<textarea class="rv-note">${esc(v ? v.note : (a ? a.comment_vi : ''))}</textarea></label>
         <button class="btn pri rv-save" data-id="${r.id}" type="button">${v ? 'Lưu lại' : 'Duyệt và lưu'}</button>
-        <span class="st">${v ? `✓ GV ${esc(v.by)} duyệt ${when(v.at)}: ${v.score10 != null ? `<span class="score gv">${fmt(v.score10)}<small>/10</small></span>` : 'chưa cho điểm'}` : ''}</span></div>`;
+        <span class="st">${v ? `✓ GV ${esc(v.by)} duyệt ${when(v.at)}: ${v.score10 != null ? `<span class="score gv">${fmt(v.score10)}<small>/10</small></span>` : 'chưa cho điểm'}` : ''}${r.reviewStale ? '<br><span class="stale">Học viên đã sửa bài sau khi GV duyệt: học viên chưa thấy nhận xét này cho bản mới, bấm Lưu lại để duyệt bản mới.</span>' : ''}</span></div>`;
     return h ? `<div class="mark">${h}</div>` : '';
   }
   function redraw(r) { const el = document.querySelector(`.sub-item[data-row="${r.id}"]`); if (el) el.outerHTML = itemHtml(r); }
   async function aiOne(r) {
     const j = await call({ action: 'ai_mark', id: r.id });
-    r.ai = j.ai; r.aiStale = false; return r;
+    r.ai = j.ai; r.aiStale = false; r.aiPending = false; r.aiError = null; return r;
   }
   ['#f-cls', '#f-grp'].forEach(s => $(s).addEventListener('change', render));
   $('#f-q').addEventListener('input', render);
@@ -488,7 +520,7 @@
       const s = box.querySelector('.rv-score').value.trim();
       if (s !== '' && !(Number(s) >= 0 && Number(s) <= 10)) { alert('Điểm từ 0 đến 10.'); return; }
       sv.disabled = true;
-      try { const j = await call({ action: 'review', id: r.id, score10: s, note: box.querySelector('.rv-note').value }); r.review = j.review; redraw(r); renderTop(); }
+      try { const j = await call({ action: 'review', id: r.id, score10: s, note: box.querySelector('.rv-note').value }); r.review = j.review; r.reviewStale = false; redraw(r); renderTop(); }
       catch (er) { sv.disabled = false; alert(er.message); }
       return;
     }
