@@ -462,16 +462,21 @@
   }
   /* class code (aws_kv class_code): students see and submit under this one only */
   $('#cc-max').innerHTML = [1, 2, 3, 4, 5, 6, 8, 10].map(n => `<option value="${n}">${n} lần</option>`).join('');
+  let knownCodes = [];
+  function fillCls() {   /* the open code and every code used so far come first, even before anyone submits under them */
+    const cur = $('#f-cls').value, old = [...new Set(rows.map(r => r.cls))].filter(c => !knownCodes.includes(c)).sort();
+    $('#f-cls').innerHTML = '<option value="">Tất cả mã lớp</option>' + [...knownCodes, ...old].map(c => `<option${c === cur ? ' selected' : ''}>${esc(c)}</option>`).join('');
+  }
   function drawCode(j) {
     const c = j.code || '', h = j.history || [];
+    knownCodes = [...new Set([c, ...h.map(x => x.code)].filter(Boolean))]; fillCls();
     $('#cc-cur').textContent = c || 'Đang đóng: học viên chưa nộp được';
     $('#cc-cur').classList.toggle('off', !c);
     $('#cc-lim').textContent = c ? `· tối đa ${j.maxAttempts} lần nộp mỗi bài` : '';
     $('#cc-max').value = String(j.maxAttempts || 3);
     $('#cc-hist').innerHTML = h.length ? '<span class="muted">Đã dùng:</span>' + h.map(x => `<button type="button" data-c="${esc(x.code)}" class="${x.code === c ? 'cur' : ''}" title="Mở ${when(x.at)}${x.by ? ' · ' + esc(x.by) : ''}">${esc(x.code)}</button>`).join('') : '';
     document.querySelectorAll('#cc-hist button').forEach(b => b.onclick = () => {
-      const s = $('#f-cls'); if (![...s.options].some(o => o.value === b.dataset.c)) { $('#cc-st').textContent = `Chưa có bài nộp dưới mã ${b.dataset.c}.`; return; }
-      s.value = b.dataset.c; render();
+      $('#f-cls').value = b.dataset.c; render();
     });
   }
   async function loadCode() { try { drawCode(await call({ action: 'get_code' })); } catch (e) { $('#cc-st').textContent = e.message; $('#cc-st').className = 'st err'; } }
@@ -501,8 +506,7 @@
     try { rows = (await call({ action: 'list' })).rows || []; }
     catch (e) { $('#chips').innerHTML = `<span class="err">${esc(e.message)}</span>`; return; }
     rows.forEach(r => { r.grp = grp(r.taskId); r.key = norm(r.name) + '|' + norm(r.cls); });
-    const cur = $('#f-cls').value, cls = [...new Set(rows.map(r => r.cls))].sort();
-    $('#f-cls').innerHTML = '<option value="">Tất cả lớp</option>' + cls.map(c => `<option${c === cur ? ' selected' : ''}>${esc(c)}</option>`).join('');
+    fillCls();
     const g0 = $('#f-grp').value;
     $('#f-grp').innerHTML = '<option value="">Tất cả phần</option>' + GROUPS.map(g => `<option value="${g[0]}"${g[0] === g0 ? ' selected' : ''}>${esc(g[1])}</option>`).join('');
     render();
