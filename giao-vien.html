@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Bài luyện viết học viên</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #FBF9FC; --surface: #FFFFFF; --surface-3: #FBF5FF; --ink: #241530; --ink-2: #5A4C68; --muted: #8B7C99; --line: #E6DDF0; --line-strong: #CDB9E1;
+    --purple: #613087; --purple-soft: #EFE4F7; --orange: #E8833A; --orange-soft: #FDEBDD; --orange-ink: #A04E12; --good: #2E7D4F; --good-soft: #DFF1E5; --bad: #B23B3B; --bad-soft: #F8E1E1;
+    --shadow: 0 1px 2px rgba(60,30,90,.06), 0 4px 14px rgba(60,30,90,.06); color-scheme: light; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #17101F; --surface: #201530; --surface-3: #241838; --ink: #F1E9F8; --ink-2: #D2C2E0; --muted: #9C8BAC;
+    --line: #3B2A50; --line-strong: #533B6E; --purple: #BB8FE6; --purple-soft: #33234A; --orange-soft: #3A2616; --orange-ink: #F2A96E; --good: #6FCF97; --good-soft: #1E3A2A; --bad: #EF7B7B; --bad-soft: #3F2323; color-scheme: dark; } }
+  :root[data-theme="dark"] { --bg: #17101F; --surface: #201530; --surface-3: #241838; --ink: #F1E9F8; --ink-2: #D2C2E0; --muted: #9C8BAC;
+    --line: #3B2A50; --line-strong: #533B6E; --purple: #BB8FE6; --purple-soft: #33234A; --orange-soft: #3A2616; --orange-ink: #F2A96E; --good: #6FCF97; --good-soft: #1E3A2A; --bad: #EF7B7B; --bad-soft: #3F2323; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 400 15px/1.55 "Roboto", "Segoe UI", Arial, sans-serif; }
+  .wrap { padding: 20px clamp(16px, 2.5vw, 40px) 60px; }
+  h1 { font-size: 1.45em; margin: 0 0 2px; } .sub { color: var(--muted); margin: 0 0 18px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 16px 18px; }
+  .login { max-width: 420px; border-top: 4px solid var(--purple); }
+  .field { display: grid; gap: 5px; margin-bottom: 12px; font-weight: 500; font-size: .92em; }
+  input, select { font: inherit; font-size: 16px; padding: 10px 12px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--surface); color: var(--ink); min-width: 0; }
+  .pw { display: flex; gap: 6px; } .pw input { flex: 1; }
+  .btn { font: inherit; font-weight: 500; min-height: 40px; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); cursor: pointer; }
+  .btn.pri { background: var(--purple); border-color: var(--purple); color: #fff; } :root[data-theme="dark"] .btn.pri { color: #1b1026; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.pri { color: #1b1026; } }
+  .btn.del { color: var(--bad); border-color: var(--bad-soft); min-height: 34px; padding: 4px 10px; font-size: .85em; }
+  .err { color: var(--bad); min-height: 1.2em; margin: 4px 0 0; }
+  .bar { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: end; margin-bottom: 14px; }
+  .bar label { display: grid; gap: 3px; font-size: .82em; color: var(--muted); font-weight: 500; }
+  .bar .sp { flex: 1; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+  .chip { background: var(--purple-soft); color: var(--ink); border-radius: 999px; padding: 4px 12px; font-size: .88em; } .chip b { font-weight: 700; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 12px; border-bottom: 1px solid var(--line); }
+  .tabs button { font: inherit; font-weight: 500; background: none; border: 0; border-bottom: 3px solid transparent; padding: 8px 12px; color: var(--ink-2); cursor: pointer; min-height: 40px; }
+  .tabs button[aria-selected="true"] { color: var(--purple); border-bottom-color: var(--purple); }
+  table { border-collapse: collapse; width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  th, td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; font-size: .92em; }
+  th { background: var(--surface-3); font-weight: 700; font-size: .82em; color: var(--ink-2); }
+  td.n, td[data-l="Lớp"] { white-space: nowrap; } td.n { text-align: center; } td.n.full { color: var(--good); font-weight: 700; } td.n.zero { color: var(--muted); }
+  .namebtn { background: none; border: 0; padding: 0; font: inherit; font-weight: 600; color: var(--purple); cursor: pointer; text-align: left; text-decoration: underline; }
+  .tbl-wrap { overflow-x: auto; }
+  .sub-list { display: grid; gap: 12px; }
+  .sub-item { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--orange); border-radius: 12px; padding: 12px 14px; }
+  .sub-meta { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; font-size: .86em; color: var(--ink-2); margin-bottom: 6px; }
+  .sub-meta b { color: var(--ink); font-size: 1.05em; }
+  .tag { font-size: .8em; padding: 1px 8px; border-radius: 999px; background: var(--surface-3); border: 1px solid var(--line); }
+  .tag.warn { background: var(--orange-soft); color: var(--orange-ink); border-color: transparent; }
+  .prompt { font-size: .9em; color: var(--muted); white-space: pre-line; margin: 0 0 8px; padding: 6px 10px; border-left: 3px solid var(--line-strong); background: var(--surface-3); border-radius: 0 8px 8px 0; }
+  .ans { display: grid; gap: 6px; } .ans div { white-space: pre-wrap; } .ans .lb { display: block; font-size: .78em; font-weight: 700; color: var(--purple); }
+  .ans .empty { color: var(--muted); font-style: italic; }
+  .muted { color: var(--muted); } .hide { display: none !important; }
+  @media (max-width: 700px) {
+    .bar > * { flex: 1 1 140px; } .bar .sp { display: none; }
+    .tbl-wrap table, .tbl-wrap thead, .tbl-wrap tbody, .tbl-wrap tr, .tbl-wrap td { display: block; } .tbl-wrap thead { display: none; }
+    .tbl-wrap tr { border-bottom: 1px solid var(--line); padding: 6px 0; } .tbl-wrap td { border: 0; padding: 3px 10px; text-align: left; }
+    .tbl-wrap td[data-l]::before { content: attr(data-l) ": "; color: var(--muted); font-size: .85em; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Bài luyện viết của học viên</h1>
+  <p class="sub">Academic Writing · Câu và đoạn văn từng bước · chỉ các bài tự viết (bài chọn đáp án không lưu)</p>
+
+  <div id="login" class="card login">
+    <label class="field">Tên giáo viên<input id="u" type="text" autocomplete="username"></label>
+    <label class="field">Mật khẩu<span class="pw"><input id="pw" type="password" autocomplete="current-password"><button class="btn" id="pw-show" type="button">Show</button></span></label>
+    <button class="btn pri" id="go" type="button">Đăng nhập</button>
+    <p class="err" id="lerr" role="alert"></p>
+    <p class="muted" style="font-size:.86em;margin:6px 0 0">Dùng tài khoản giáo viên của các trang Check the previous lesson.</p>
+  </div>
+
+  <div id="app" class="hide">
+    <div class="bar">
+      <label>Lớp<select id="f-cls"></select></label>
+      <label>Phần<select id="f-grp"></select></label>
+      <label>Học viên<input id="f-q" type="search" placeholder="Tìm theo tên"></label>
+      <span class="sp"></span>
+      <button class="btn" id="reload" type="button">Tải lại</button>
+      <button class="btn" id="csv" type="button">Tải CSV</button>
+      <button class="btn" id="out" type="button">Đăng xuất</button>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="tabs" role="tablist"><button role="tab" aria-selected="true" data-t="prog">Tiến độ theo học viên</button><button role="tab" aria-selected="false" data-t="list">Bài nộp</button></div>
+    <div id="t-prog" class="tbl-wrap"></div>
+    <div id="t-list" class="sub-list hide"></div>
+  </div>
+</div>
+<script>
+(function () {
+  const API = {"url": "https://wowhsxnzfetirqpbqxka.supabase.co/rest/v1/rpc/aws_api", "key": "sb_publishable_B2Jpfm0-Z7C-RBrnYa_OuA_DwD-n4yk"}, TASKS = ["sua-cau-1", "sua-cau-2", "sua-cau-3", "sua-cau-4", "sua-cau-5", "sua-cau-6", "sua-cau-7", "sua-cau-8", "nang-cau-1", "nang-cau-2", "nang-cau-3", "nang-cau-4", "nang-cau-5", "nang-cau-6", "muoi-mau-1", "muoi-mau-2", "muoi-mau-3", "muoi-mau-4", "muoi-mau-5", "muoi-mau-6", "muoi-mau-7", "muoi-mau-8", "muoi-mau-9", "muoi-mau-10", "wt-ts-1", "wt-ts-2", "wt-ts-3", "wt-ts-4", "wt-ts-5", "wt-ol-1", "wt-ol-2", "wt-ol-3", "wt-ol-4", "wt-ol-5", "wt-cs-1", "wt-cs-2", "wt-cs-3", "wt-cs-4", "wt-cs-5", "doan-van-1"];
+  const GROUPS = [['sua-cau', 'Cấp 3 · Sửa câu'], ['nang-cau', 'Cấp 4 · Nâng cấp câu'], ['muoi-mau', 'Cấp 5 · 10 mẫu câu'],
+    ['wt-ts', 'Câu chủ đề'], ['wt-ol', 'Dàn ý'], ['wt-cs', 'Câu kết'], ['doan-van', 'Đoạn văn']];
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase().replace(/\s+/g, ' ').trim();
+  const grp = id => (GROUPS.find(g => id === g[0] || id.startsWith(g[0] + '-')) || [''])[0];
+  const total = g => TASKS.filter(t => grp(t) === g).length;
+  const num = id => (id.match(/-(\d+)$/) || [, ''])[1];
+  const p2 = n => String(n).padStart(2, '0');
+  const when = iso => { const d = new Date(iso); return isNaN(d) ? '' : `${p2(d.getHours())}:${p2(d.getMinutes())} ${p2(d.getDate())}/${p2(d.getMonth() + 1)}/${d.getFullYear()}`; };
+  let cred = null, role = '', rows = [], tab = 'prog';
+
+  async function call(body) {
+    const r = await fetch(API.url, { method: 'POST', headers: { apikey: API.key, 'Content-Type': 'application/json' }, body: JSON.stringify({ p: Object.assign({}, cred, body) }) });
+    const j = await r.json().catch(() => null);
+    if (!r.ok || !j) throw new Error((j && (j.message || j.error)) || 'HTTP ' + r.status);
+    if (!j.ok) throw new Error(j.error === 'wrong name or password' ? 'Sai tên hoặc mật khẩu.' : j.error);
+    return j;
+  }
+  $('#pw-show').onclick = () => { const i = $('#pw'); const on = i.type === 'password'; i.type = on ? 'text' : 'password'; $('#pw-show').textContent = on ? 'Hide' : 'Show'; };
+  $('#pw').addEventListener('keydown', e => { if (e.key === 'Enter') $('#go').click(); });
+  $('#go').onclick = async () => {
+    $('#lerr').textContent = ''; cred = { user: $('#u').value.trim(), password: $('#pw').value };
+    if (!cred.user || !cred.password) { $('#lerr').textContent = 'Nhập tên và mật khẩu.'; return; }
+    $('#go').disabled = true;
+    try { const j = await call({ action: 'login' }); role = j.role; $('#login').classList.add('hide'); $('#app').classList.remove('hide'); await load(); }
+    catch (e) { cred = null; $('#lerr').textContent = e.message; }
+    finally { $('#go').disabled = false; }
+  };
+  $('#out').onclick = () => { cred = null; rows = []; $('#pw').value = ''; $('#app').classList.add('hide'); $('#login').classList.remove('hide'); };
+  $('#reload').onclick = () => load();
+
+  async function load() {
+    $('#chips').innerHTML = '<span class="muted">Đang tải…</span>';
+    try { rows = (await call({ action: 'list' })).rows || []; }
+    catch (e) { $('#chips').innerHTML = `<span class="err">${esc(e.message)}</span>`; return; }
+    rows.forEach(r => { r.grp = grp(r.taskId); r.key = norm(r.name) + '|' + norm(r.cls); });
+    const cur = $('#f-cls').value, cls = [...new Set(rows.map(r => r.cls))].sort();
+    $('#f-cls').innerHTML = '<option value="">Tất cả lớp</option>' + cls.map(c => `<option${c === cur ? ' selected' : ''}>${esc(c)}</option>`).join('');
+    const g0 = $('#f-grp').value;
+    $('#f-grp').innerHTML = '<option value="">Tất cả phần</option>' + GROUPS.map(g => `<option value="${g[0]}"${g[0] === g0 ? ' selected' : ''}>${esc(g[1])}</option>`).join('');
+    render();
+  }
+  function filtered() {
+    const c = $('#f-cls').value, g = $('#f-grp').value, q = norm($('#f-q').value);
+    return rows.filter(r => (!c || r.cls === c) && (!g || r.grp === g) && (!q || norm(r.name).includes(q)));
+  }
+  function render() {
+    const f = filtered(), studs = new Map();
+    f.forEach(r => { if (!studs.has(r.key)) studs.set(r.key, { name: r.name, cls: r.cls, by: {}, last: '', n: 0, shown: 0 });
+      const s = studs.get(r.key); (s.by[r.grp] = s.by[r.grp] || new Set()).add(r.taskId); s.n++; if (r.shown) s.shown++; if (r.updatedAt > s.last) s.last = r.updatedAt; });
+    $('#chips').innerHTML = `<span class="chip"><b>${studs.size}</b> học viên</span><span class="chip"><b>${f.length}</b> bài nộp</span>`
+      + `<span class="chip"><b>${f.filter(r => r.shown).length}</b> bài đã mở đáp án gợi ý trước khi nộp</span>`;
+    const list = [...studs.values()].sort((a, b) => a.cls.localeCompare(b.cls) || a.name.localeCompare(b.name, 'vi'));
+    $('#t-prog').innerHTML = list.length ? `<table><thead><tr><th>Học viên</th><th>Lớp</th>${GROUPS.map(g => `<th>${esc(g[1])}</th>`).join('')}<th>Tổng</th><th>Nộp gần nhất</th></tr></thead><tbody>`
+      + list.map(s => `<tr><td data-l="Học viên"><button class="namebtn" data-k="${esc(s.name)}">${esc(s.name)}</button></td><td data-l="Lớp">${esc(s.cls)}</td>`
+        + GROUPS.map(g => { const k = (s.by[g[0]] || new Set()).size, t = total(g[0]); return `<td class="n${k && k >= t ? ' full' : ''}${k ? '' : ' zero'}" data-l="${esc(g[1])}">${k}/${t}</td>`; }).join('')
+        + `<td class="n" data-l="Tổng">${Object.values(s.by).reduce((n, x) => n + x.size, 0)}/${TASKS.length}</td><td data-l="Nộp gần nhất">${when(s.last)}</td></tr>`).join('')
+      + '</tbody></table>' : '<p class="muted">Chưa có bài nộp nào khớp bộ lọc.</p>';
+    const order = id => { const i = TASKS.indexOf(id); return i < 0 ? 999 : i; };
+    const items = f.slice().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt) || order(a.taskId) - order(b.taskId));
+    $('#t-list').innerHTML = items.length ? items.map(r => `<div class="sub-item">
+        <div class="sub-meta"><b>${esc(r.name)}</b><span>${esc(r.cls)}</span><span class="tag">${esc(r.section)}${num(r.taskId) && r.grp !== 'doan-van' ? ' · câu ' + num(r.taskId) : ''}</span>
+          <span>${when(r.updatedAt)}</span>${r.attempts > 1 ? `<span class="tag">nộp ${r.attempts} lần</span>` : ''}<span>${r.words} từ</span>
+          ${r.shown ? '<span class="tag warn">đã mở đáp án gợi ý trước khi nộp</span>' : ''}
+          ${role === 'admin' ? `<span style="flex:1"></span><button class="btn del" data-id="${r.id}" type="button">Xoá</button>` : ''}</div>
+        ${r.prompt ? `<p class="prompt">${esc(r.prompt)}</p>` : ''}
+        <div class="ans">${(r.answer || []).map(a => `<div>${a.label ? `<span class="lb">${esc(a.label)}</span>` : ''}${a.text ? esc(a.text) : '<span class="empty">(để trống)</span>'}</div>`).join('')}</div></div>`).join('')
+      : '<p class="muted">Chưa có bài nộp nào khớp bộ lọc.</p>';
+  }
+  ['#f-cls', '#f-grp'].forEach(s => $(s).addEventListener('change', render));
+  $('#f-q').addEventListener('input', render);
+  document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => setTab(b.dataset.t));
+  function setTab(t) { tab = t; document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.t === t)); $('#t-prog').classList.toggle('hide', t !== 'prog'); $('#t-list').classList.toggle('hide', t !== 'list'); }
+  $('#t-prog').addEventListener('click', e => { const b = e.target.closest('.namebtn'); if (!b) return; $('#f-q').value = b.dataset.k; render(); setTab('list'); });
+  $('#t-list').addEventListener('click', async e => {
+    const b = e.target.closest('.del'); if (!b) return;
+    if (!confirm('Xoá hẳn bài nộp này khỏi cơ sở dữ liệu? Không khôi phục được.')) return;
+    b.disabled = true;
+    try { await call({ action: 'delete', ids: [Number(b.dataset.id)] }); rows = rows.filter(r => r.id !== Number(b.dataset.id)); render(); }
+    catch (er) { alert(er.message); b.disabled = false; }
+  });
+  $('#csv').onclick = () => {
+    const head = ['Nộp lúc', 'Nộp lần đầu', 'Họ tên', 'Lớp', 'Phần', 'Mã bài', 'Đề', 'Bài viết', 'Số từ', 'Số lần nộp', 'Mở đáp án trước khi nộp', 'Bản'];
+    const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+    const lines = filtered().map(r => [when(r.updatedAt), when(r.firstAt), r.name, r.cls, r.section, r.taskId, r.prompt,
+      (r.answer || []).map(a => (a.label ? a.label + ': ' : '') + a.text).join('\n'), r.words, r.attempts, r.shown ? 'Có' : '', r.page].map(q).join(','));
+    const blob = new Blob(['﻿' + [head.map(q).join(','), ...lines].join('\r\n')], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'bai-luyen-viet-' + new Date().toISOString().slice(0, 10) + '.csv'; a.click();
+  };
+})();
+</script>
+</body>
+</html>
