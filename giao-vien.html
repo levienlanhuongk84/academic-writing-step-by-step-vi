@@ -210,7 +210,15 @@
   .fb2 h5 { margin: 0 0 3px; font-size: .8em; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
   .fb2 ul { margin: 0; padding-left: 18px; font-size: .9em; }
   .rew { white-space: pre-wrap; font-size: .92em; padding: 8px 10px; border-left: 3px solid var(--good); background: var(--good-soft); border-radius: 0 8px 8px 0; }
-  .flags { color: var(--orange-ink); font-size: .88em; }
+  .flags { color: var(--orange-ink); font-size: .88em; margin: 0; padding-left: 0; list-style: none; display: grid; gap: 2px; }
+  .gates { padding: 6px 10px; border-radius: 8px; background: var(--orange-soft); font-size: .9em; }
+  .gates ul, .why ul { margin: 2px 0 0; padding-left: 18px; }
+  .why { font-size: .9em; display: grid; gap: 6px; }
+  .why h5 { margin: 0 0 3px; font-size: .8em; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .why .q { color: var(--muted); font-style: italic; }
+  .why .tp-ok { color: var(--good); } .why .tp-no { color: var(--bad); }
+  .grade { padding: 1px 9px; border-radius: 999px; background: var(--surface-3, var(--surface-2)); font-weight: 600; font-size: .88em; }
+  .code-l { color: var(--muted); font-size: .85em; margin-right: 4px; }
   .rv { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; padding: 10px; border-radius: 10px; background: var(--surface-3); border: 1px solid var(--line); }
   .rv label { display: grid; gap: 3px; font-size: .8em; color: var(--muted); font-weight: 500; }
   .rv input { width: 90px; } .rv textarea { font: inherit; font-size: 15px; min-height: 64px; width: min(640px, 100%); padding: 8px 10px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--surface); color: var(--ink); }
@@ -284,18 +292,25 @@
         <li>Bấm tên học viên: mở bài nộp của người đó.</li>
         <li>Lọc theo lớp, phần, tên ở thanh trên.</li>
         <li>Nhãn cam: học viên đã mở đáp án gợi ý trước khi nộp.</li></ul></div>
-      <div class="card"><h3>AI chấm chữa</h3><ul>
-        <li>Căn cứ: toàn bộ lý thuyết 3 bài của trang + <a href="https://levienlanhuongk84.github.io/rubric-cham-chua-writing-tong-hop/" target="_blank" rel="noopener">Rubric chấm chữa writing tổng hợp</a>.</li>
-        <li>Câu (Cấp 3–5, câu chủ đề, câu kết): rubric câu S1–S5, mỗi tiêu chí 0–2, tổng /10.</li>
-        <li>Dàn ý: 3 tiêu chí đầu của rubric đoạn văn (0–5), quy về /10.</li>
-        <li>Đoạn văn: rubric đoạn văn 5 tiêu chí × 0–5, quy về /10.</li>
-        <li><b>Tự chấm</b>: học viên bấm Nộp bài → AI chấm sau khoảng 15–30 giây, không cần bấm gì.</li>
-        <li>Học viên thấy ngay nhận xét AI dưới bài: điểm, lỗi, bản sửa, 2 cách viết khác cùng ý.</li>
-        <li>Nhiều bài cùng lúc: 6 luồng chấm song song; học viên thấy số thứ tự hàng chờ và thời gian dự kiến.</li>
-        <li>GV duyệt điểm / nhận xét → học viên thấy thêm dòng "Giáo viên đã duyệt".</li>
-        <li>Học viên sửa và nộp lại → AI tự chấm lại bản mới.</li>
-        <li>Bài AI chấm lỗi 3 lần: hiện nhãn cam, bấm <b>AI chấm</b> để thử lại.</li>
-        <li>AI chỉ là bản nháp, điểm GV mới là điểm chốt.</li>
+      <div class="card"><h3>AI chấm theo rubric</h3><ul>
+        <li>Căn cứ: lý thuyết 3 bài của trang + <a href="https://levienlanhuongk84.github.io/rubric-cham-chua-writing-tong-hop/" target="_blank" rel="noopener">Rubric chấm chữa writing tổng hợp</a> (sheet "Chấm bằng AI").</li>
+        <li>2 bước như rubric: (1) quét lỗi theo bảng mã; (2) chấm từng tiêu chí, trích bằng chứng trước khi cho điểm.</li>
+        <li>Hệ thống tự kiểm: lỗi phải trích đúng nguyên văn bài; mỗi lỗi chỉ trừ ở một tiêu chí; cổng chặn (≤ 20 từ, thiếu số từ, lạc đề luyện tập, chép đề); làm tròn và xếp loại theo rubric.</li>
+        <li>Câu: S1–S5 × 0–2 → Đúng / Gần đúng / Chưa đúng. Dàn ý: 3 tiêu chí đầu của rubric đoạn văn (0–5) × 10/15. Đoạn văn: 5 tiêu chí × 0–5 × 0,4.</li>
+        <li>Đoạn văn, dàn ý giáp ranh mốc xếp loại (cách ≤ 0,25): AI chấm 2 lần, lệch thì hiện ⚠.</li></ul></div>
+      <div class="card"><h3>Học viên thấy gì</h3><ul>
+        <li>Nộp bài → khoảng 15–30 giây sau có nhận xét dưới bài, không cần bấm gì.</li>
+        <li>Đúng: lời khen + gợi ý nâng lên một bậc.</li>
+        <li>Gần đúng: mã lỗi tại chỗ sai; cách sửa ẩn sau nút "Tự sửa trước, rồi xem cách sửa".</li>
+        <li>Chưa đúng: câu mẫu đúng + quy tắc ngắn + yêu cầu viết lại.</li>
+        <li>Đoạn văn: điểm và lý do từng tiêu chí, yêu cầu của đề đã đạt / chưa đạt.</li>
+        <li>Ghi chú ⚠ chỉ giáo viên thấy.</li></ul></div>
+      <div class="card"><h3>Giáo viên duyệt</h3><ul>
+        <li>Ưu tiên soát: Task Fulfilment, tổ chức (AI hay nương tay), ngữ pháp (AI hay chặt tay), bài có ⚠.</li>
+        <li>Duyệt điểm / nhận xét → học viên thấy thêm dòng "Giáo viên đã duyệt".</li>
+        <li><b>AI chấm lại</b>: đưa bài vào hàng chấm, kết quả tự hiện sau khoảng 30 giây.</li>
+        <li>Nhiều bài cùng lúc: 6 luồng chấm song song.</li>
+        <li>Bài AI chấm lỗi 3 lần: nhãn cam, bấm <b>AI chấm</b> để thử lại.</li>
         <li>AI không nhận tên học viên, chỉ nhận đề và bài viết.</li></ul></div>
       <div class="card"><h3>Xuất và dọn dữ liệu</h3><ul>
         <li><b>Tải CSV</b>: lấy đúng các bài đang lọc, mở bằng Excel.</li>
@@ -389,13 +404,13 @@
   $('#reload').onclick = () => load();
   $('#ai-all').onclick = async () => {
     const todo = filtered().filter(r => (!r.ai || r.aiStale) && !r.aiPending); if (!todo.length) return;
-    if (!confirm(`AI chấm ${todo.length} bài (khoảng ${Math.ceil(todo.length * 10 / 60)} phút)? Giữ trang mở đến khi xong.`)) return;
+    if (!confirm(`Đưa ${todo.length} bài vào hàng AI chấm (AI chấm song song, khoảng ${Math.max(1, Math.ceil(todo.length * 15 / 6 / 60))} phút)?`)) return;
     batching = true; $('#ai-all').disabled = true; const b = $('#batch'); b.classList.remove('hide'); let ok = 0, bad = 0;
     for (const [i, r] of todo.entries()) {
-      b.textContent = `AI đang chấm ${i + 1}/${todo.length}: ${r.name} · ${r.section}…`;
+      b.textContent = `Đang đưa vào hàng chấm ${i + 1}/${todo.length}…`;
       try { await aiOne(r); redraw(r); ok++; } catch (e) { bad++; }
     }
-    batching = false; b.textContent = `Xong: AI chấm ${ok} bài` + (bad ? `, ${bad} bài lỗi (bấm lại để chấm tiếp)` : '') + '.'; renderTop();
+    batching = false; b.textContent = `Đã đưa ${ok} bài vào hàng chấm` + (bad ? `, ${bad} bài chưa đưa được (bấm lại)` : '') + ': kết quả tự hiện khi AI chấm xong.'; renderTop();
   };
 
   let autoT = null;
@@ -473,12 +488,12 @@
   function markHtml(r) {
     const a = r.ai, v = r.review;
     let h = '';
-    if (r.aiPending) h += `<p class="wait"><span class="spin" aria-hidden="true"></span>${a ? 'Học viên đã nộp lại: AI đang tự chấm bản mới…' : 'AI đang tự chấm (thường 15–30 giây)…'}</p>`;
+    if (r.aiPending) h += `<p class="wait"><span class="spin" aria-hidden="true"></span>${a ? 'AI đang chấm lại bản hiện tại của bài…' : 'AI đang tự chấm (thường 15–30 giây)…'}</p>`;
     else if (r.aiError) h += `<p class="wait fail">⚠ AI tự chấm chưa được (${esc(r.aiError)}). Bấm "AI chấm" để thử lại.</p>`;
     if (a) {
       const cr = a.criteria || [], multi = (a.items || []).length > 1 || (a.items || []).some(i => i.label);
       const vc = t => t === 'Đúng' ? 'v-ok' : t === 'Gần đúng' ? 'v-mid' : 'v-bad';
-      h += `<div class="mark-head"><span class="score">${fmt(a.score10)}<small>/10 AI</small></span>
+      h += `<div class="mark-head"><span class="score">${fmt(a.score10)}<small>/10 AI</small></span>${a.grade ? `<span class="grade">${esc(a.grade)}</span>` : ''}
           <span>${a.level === 'sentence' ? 'Rubric câu S1–S5' : a.level === 'outline' ? 'Rubric đoạn văn · 3 tiêu chí (dàn ý)' : 'Rubric đoạn văn · 5 tiêu chí'}</span>
           <span class="muted">${esc(a.model || '')} · ${when(a.at)}</span>${r.aiStale ? '<span class="stale">Học viên đã sửa bài sau lần AI chấm này</span>' : ''}</div>
         <div class="tbl-wrap"><table class="crit"><thead><tr>${multi ? '<th>Ô</th>' : ''}${cr.map(c => `<th title="${esc(CRIT[c] || c)}">${esc(c)} · ${esc(CRIT[c] || '')}</th>`).join('')}<th>Tổng</th>${a.level === 'sentence' ? '<th>Kết luận</th>' : ''}<th class="ev">Bằng chứng</th></tr></thead><tbody>`
@@ -486,12 +501,24 @@
           + cr.map(c => `<td data-l="${esc(c)} · ${esc(CRIT[c] || '')}">${i.scores ? i.scores[c] : ''}</td>`).join('')
           + `<td data-l="Tổng"><b>${i.total}/${i.max}</b></td>${a.level === 'sentence' ? `<td data-l="Kết luận" class="${vc(i.verdict)}">${esc(i.verdict || '')}</td>` : ''}<td class="ev" data-l="Bằng chứng">${esc(i.evidence_vi || '')}</td></tr>`).join('')
         + '</tbody></table></div>';
-      if ((a.errors || []).length) h += '<ul class="errs">' + a.errors.map(e => `<li><span class="code">${esc(e.code)}</span><del>${esc(e.quote)}</del> → <ins>${esc(e.correction)}</ins>${e.global ? '<span class="glob">lỗi cản trở nghĩa</span>' : ''}<br><span class="muted">${esc(e.explain_vi)}</span></li>`).join('') + '</ul>';
+      if ((a.gates || []).length) h += `<div class="gates"><b>Cổng chặn đã áp (rubric sheet 2):</b><ul>${a.gates.map(g => `<li>${esc(g.note || g.short || g.rule)}</li>`).join('')}</ul></div>`;
+      if (a.version >= 2) {
+        let w = '';
+        if ((a.crit_notes || []).length) w += `<div><h5>Lý do từng tiêu chí</h5><ul>${a.crit_notes.map(c => `<li><b>${esc(c.c)} ${(a.items[0] || {}).scores ? a.items[0].scores[c.c] : ''}/5</b> · ${esc(c.reason_vi)}${(c.evidence || []).length ? ` <span class="q">“${c.evidence.map(esc).join('” · “')}”</span>` : ''}</li>`).join('')}</ul></div>`;
+        if ((a.task_points || []).length) w += `<div><h5>Yêu cầu của đề${a.ideas_developed != null ? ` · ${a.ideas_developed} ý có giải thích + ví dụ` : ''}${a.words_counted != null && a.words_counted !== a.words ? ` · ${a.words_counted} từ được tính` : ''}</h5><ul>${a.task_points.map(t => `<li class="${t.met ? 'tp-ok' : 'tp-no'}">${t.met ? '✓' : '✗'} ${esc(t.point)}</li>`).join('')}</ul></div>`;
+        if (a.level === 'sentence') w += (a.items || []).map(i => {
+          const bits = [i.s1_reason_vi ? `<b>S1:</b> ${esc(i.s1_reason_vi)}` : '', i.model ? `<b>Câu mẫu đúng:</b> ${esc(i.model)}` : '', i.rule_vi ? `<b>Quy tắc:</b> ${esc(i.rule_vi)}` : '',
+            i.upgrade && i.upgrade.text ? `<b>Nâng một bậc:</b> ${esc(i.upgrade.text)}${i.upgrade.method_vi ? ` <span class="q">(${esc(i.upgrade.method_vi)})</span>` : ''}` : ''].filter(Boolean);
+          return bits.length ? `<div><h5>${esc(i.label || 'Câu')} · ${esc(i.verdict || '')}${i.verdict === 'Gần đúng' ? ' · học viên thấy cách sửa sau khi bấm nút' : ''}</h5><ul>${bits.map(x => `<li>${x}</li>`).join('')}</ul></div>` : '';
+        }).join('');
+        if (w) h += `<div class="why">${w}</div>`;
+      }
+      if ((a.errors || []).length) h += '<ul class="errs">' + a.errors.map(e => `<li><span class="code">${esc(e.code)}</span>${e.label ? `<span class="code-l">${esc(e.label)}</span>` : ''}<del>${esc(e.quote)}</del> → <ins>${esc(e.correction)}</ins>${e.global ? '<span class="glob">lỗi cản trở nghĩa</span>' : ''}<br><span class="muted">${esc(e.explain_vi)}</span></li>`).join('') + '</ul>';
       const ul = xs => (xs || []).length ? '<ul>' + xs.map(x => `<li>${esc(x)}</li>`).join('') + '</ul>' : '<p class="muted" style="margin:0">—</p>';
-      h += `<div class="fb2"><div><h5>Làm tốt</h5>${ul(a.strengths_vi)}</div><div><h5>Cần sửa</h5>${ul(a.fixes_vi)}</div><div><h5>Nhận xét chung</h5><p style="margin:0;font-size:.9em">${esc(a.comment_vi)}</p></div></div>`;
+      h += `<div class="fb2"><div><h5>Làm tốt</h5>${ul(a.strengths_vi)}</div><div><h5>Việc cần làm tiếp</h5>${ul(a.fixes_vi)}</div><div><h5>Nhận xét chung</h5><p style="margin:0;font-size:.9em">${esc(a.comment_vi)}</p></div></div>`;
       if (a.rewrite) h += `<div><h5 style="margin:0 0 3px;font-size:.8em;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)">Bản sửa gợi ý</h5><div class="rew">${esc(a.rewrite)}</div></div>`;
       if ((a.alternatives || []).length) h += `<div><h5 style="margin:0 0 3px;font-size:.8em;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)">Cách viết khác cùng ý (học viên thấy)</h5><ol class="alt">${a.alternatives.map(x => `<li>${esc(x.text)}${x.method_vi ? `<span class="m">${esc(x.method_vi)}</span>` : ''}</li>`).join('')}</ol></div>`;
-      if ((a.flags || []).length) h += `<div class="flags">⚠ ${a.flags.map(esc).join(' · ')}</div>`;
+      if ((a.flags || []).length) h += `<ul class="flags">${a.flags.map(x => `<li>${/^⚠/.test(x) ? '' : '⚠ '}${esc(x)}</li>`).join('')}</ul>`;
     }
     if (a || v) h += `<div class="rv"><label>Điểm GV /10<input class="rv-score" type="number" min="0" max="10" step="0.25" value="${v && v.score10 != null ? v.score10 : (a ? a.score10 : '')}"></label>
         <label class="note-l">Nhận xét GV<textarea class="rv-note">${esc(v ? v.note : (a ? a.comment_vi : ''))}</textarea></label>
@@ -500,9 +527,9 @@
     return h ? `<div class="mark">${h}</div>` : '';
   }
   function redraw(r) { const el = document.querySelector(`.sub-item[data-row="${r.id}"]`); if (el) el.outerHTML = itemHtml(r); }
-  async function aiOne(r) {
-    const j = await call({ action: 'ai_mark', id: r.id });
-    r.ai = j.ai; r.aiStale = false; r.aiPending = false; r.aiError = null; return r;
+  async function aiOne(r) {   /* puts the submission back in the AI queue; the workers mark it and autoRefresh shows it */
+    await call({ action: 'ai_mark', id: r.id });
+    r.aiPending = true; r.aiError = null; if (r.ai) r.aiStale = true; return r;
   }
   ['#f-cls', '#f-grp'].forEach(s => $(s).addEventListener('change', render));
   $('#f-q').addEventListener('input', render);
@@ -511,7 +538,7 @@
     const ai = e.target.closest('.ai-one'), sv = e.target.closest('.rv-save');
     if (ai) {
       const r = rows.find(x => x.id === Number(ai.dataset.id)); if (!r) return;
-      ai.disabled = true; ai.textContent = 'AI đang chấm…';
+      ai.disabled = true; ai.textContent = 'Đang đưa vào hàng chấm…';
       try { await aiOne(r); redraw(r); renderTop(); }
       catch (er) { ai.disabled = false; ai.textContent = r.ai ? 'AI chấm lại' : 'AI chấm'; alert('AI chưa chấm được: ' + er.message); }
       return;
