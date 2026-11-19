@@ -224,6 +224,17 @@
   .rv input { width: 90px; } .rv textarea { font: inherit; font-size: 15px; min-height: 64px; width: min(640px, 100%); padding: 8px 10px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--surface); color: var(--ink); }
   .rv .note-l { flex: 1 1 320px; } .rv .st { font-size: .84em; color: var(--good); }
   .batch { font-size: .86em; color: var(--ink-2); }
+  /* class code: the only code students can submit under */
+  .cc { margin-bottom: 14px; border-top: 4px solid var(--orange); display: grid; gap: 10px; }
+  .cc-now { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; }
+  .cc-now .eyebrow { margin: 0; flex-basis: 100%; }
+  .cc-code { font: 700 1.6em/1.1 var(--font); letter-spacing: .04em; color: var(--purple); }
+  .cc-code.off { color: var(--bad); font-size: 1.2em; letter-spacing: 0; }
+  .cc .bar { margin: 0; } .cc input#cc-in { text-transform: uppercase; width: 190px; }
+  .cc-hist { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: .86em; }
+  .cc-hist button { font: inherit; border: 1px solid var(--line); background: var(--surface-3); color: var(--ink); border-radius: 999px; padding: 3px 10px; cursor: pointer; }
+  .cc-hist button.cur { border-color: var(--purple); color: var(--purple); font-weight: 700; }
+  .cc .st { font-size: .86em; color: var(--good); min-height: 1.2em; margin: 0; } .cc .st.err { color: var(--bad); }
   @media (max-width: 700px) {
     .bar > * { flex: 1 1 140px; } .bar .sp { display: none; }
     .tbl-wrap table, .tbl-wrap thead, .tbl-wrap tbody, .tbl-wrap tr, .tbl-wrap td { display: block; } .tbl-wrap thead { display: none; }
@@ -257,8 +268,20 @@
   </div>
 
   <div id="tools" class="hide">
+    <div class="card cc" id="cc">
+      <div class="cc-now"><span class="eyebrow">Mã lớp mới nhất · học viên chỉ nộp được dưới mã này</span>
+        <span class="cc-code" id="cc-cur">…</span><span class="muted" id="cc-lim"></span></div>
+      <div class="bar">
+        <label>Mã lớp mới (lớp + ngày)<input id="cc-in" type="text" maxlength="30" placeholder="CH35-1911" autocomplete="off"></label>
+        <label>Số lần nộp tối đa mỗi bài<select id="cc-max"></select></label>
+        <button class="btn pri" id="cc-open" type="button">Mở mã này</button>
+        <button class="btn" id="cc-close" type="button">Đóng nộp bài</button>
+      </div>
+      <div class="cc-hist" id="cc-hist"></div>
+      <p class="st" id="cc-st" aria-live="polite"></p>
+    </div>
     <div class="bar">
-      <label>Lớp<select id="f-cls"></select></label>
+      <label>Mã lớp<select id="f-cls"></select></label>
       <label>Phần<select id="f-grp"></select></label>
       <label>Học viên<input id="f-q" type="search" placeholder="Tìm theo tên"></label>
       <span class="sp"></span>
@@ -285,8 +308,15 @@
       <div class="card"><h3>Học viên nộp ở đâu</h3><ul>
         <li>Bản tiếng Việt: <a href="./" target="_blank" rel="noopener">academic-writing-step-by-step-vi</a>.</li>
         <li>Nút <b>Nộp bài</b> dưới 40 bài tự viết: Cấp 3, Cấp 4, Cấp 5, câu chủ đề, dàn ý, câu kết, đoạn văn.</li>
-        <li>Lần đầu nộp: nhập họ tên + lớp, máy tự nhớ.</li>
-        <li>Nộp lại: cập nhật bài cũ, đếm số lần nộp.</li></ul></div>
+        <li>Lần đầu nộp: nhập họ tên, máy tự nhớ.</li>
+        <li>Mã lớp tự điền: luôn là mã mới nhất giáo viên mở; học viên không tự gõ hay chọn lớp.</li>
+        <li>Nộp lại cùng mã: cập nhật bài cũ, đếm số lần nộp, tối đa theo mức giáo viên đặt.</li></ul></div>
+      <div class="card"><h3>Mã lớp</h3><ul>
+        <li>Đặt mã = lớp + ngày, VD <b>CH35-1911</b>, ở thẻ trên cùng rồi bấm <b>Mở mã này</b>.</li>
+        <li>Mở mã mới: mã cũ hết dùng ngay; bài đã nộp dưới mã cũ vẫn giữ.</li>
+        <li><b>Đóng nộp bài</b>: không ai nộp được, AI không chấm thêm.</li>
+        <li>Số lần nộp tối đa mỗi bài: tính riêng cho từng mã.</li>
+        <li>Bấm mã trong dòng "Đã dùng": lọc bài nộp theo mã đó.</li></ul></div>
       <div class="card"><h3>Xem bài</h3><ul>
         <li><b>Tiến độ</b>: số bài đã nộp / tổng số bài của từng phần.</li>
         <li>Bấm tên học viên: mở bài nộp của người đó.</li>
@@ -430,7 +460,43 @@
       renderTop();
     }, 20000);
   }
+  /* class code (aws_kv class_code): students see and submit under this one only */
+  $('#cc-max').innerHTML = [1, 2, 3, 4, 5, 6, 8, 10].map(n => `<option value="${n}">${n} lần</option>`).join('');
+  function drawCode(j) {
+    const c = j.code || '', h = j.history || [];
+    $('#cc-cur').textContent = c || 'Đang đóng: học viên chưa nộp được';
+    $('#cc-cur').classList.toggle('off', !c);
+    $('#cc-lim').textContent = c ? `· tối đa ${j.maxAttempts} lần nộp mỗi bài` : '';
+    $('#cc-max').value = String(j.maxAttempts || 3);
+    $('#cc-hist').innerHTML = h.length ? '<span class="muted">Đã dùng:</span>' + h.map(x => `<button type="button" data-c="${esc(x.code)}" class="${x.code === c ? 'cur' : ''}" title="Mở ${when(x.at)}${x.by ? ' · ' + esc(x.by) : ''}">${esc(x.code)}</button>`).join('') : '';
+    document.querySelectorAll('#cc-hist button').forEach(b => b.onclick = () => {
+      const s = $('#f-cls'); if (![...s.options].some(o => o.value === b.dataset.c)) { $('#cc-st').textContent = `Chưa có bài nộp dưới mã ${b.dataset.c}.`; return; }
+      s.value = b.dataset.c; render();
+    });
+  }
+  async function loadCode() { try { drawCode(await call({ action: 'get_code' })); } catch (e) { $('#cc-st').textContent = e.message; $('#cc-st').className = 'st err'; } }
+  async function setCode(code) {
+    const st = $('#cc-st'); st.className = 'st'; st.textContent = 'Đang lưu…';
+    try {
+      const j = await call({ action: 'set_code', code, maxAttempts: Number($('#cc-max').value) });
+      await loadCode(); $('#cc-in').value = '';
+      st.textContent = j.code ? `Đã mở mã ${j.code}: học viên tải lại trang sẽ thấy mã này.` : 'Đã đóng nộp bài.';
+    } catch (e) { st.className = 'st err'; st.textContent = e.message; }
+  }
+  $('#cc-open').onclick = () => {
+    const c = $('#cc-in').value.trim().toUpperCase().replace(/\s+/g, '');
+    if (!c) { const cur = $('#cc-cur').classList.contains('off') ? '' : $('#cc-cur').textContent;
+      if (cur) return setCode(cur);   /* only the attempt limit changed */
+      $('#cc-st').className = 'st err'; $('#cc-st').textContent = 'Nhập mã lớp, VD CH35-1911.'; $('#cc-in').focus(); return; }
+    if (!/^[A-Z0-9][A-Z0-9._-]{1,29}$/.test(c)) { $('#cc-st').className = 'st err'; $('#cc-st').textContent = 'Mã chỉ gồm chữ không dấu, số, dấu - . _ (2–30 ký tự), VD CH35-1911.'; return; }
+    if (!confirm(`Mở mã ${c}? Từ giờ học viên chỉ nộp được dưới mã này (mã cũ hết dùng).`)) return;
+    setCode(c);
+  };
+  $('#cc-in').addEventListener('keydown', e => { if (e.key === 'Enter') $('#cc-open').click(); });
+  $('#cc-close').onclick = () => { if (confirm('Đóng nộp bài? Học viên sẽ không nộp được cho tới khi mở mã mới.')) setCode(''); };
+
   async function load() {
+    loadCode();
     $('#chips').innerHTML = '<span class="muted">Đang tải…</span>';
     try { rows = (await call({ action: 'list' })).rows || []; }
     catch (e) { $('#chips').innerHTML = `<span class="err">${esc(e.message)}</span>`; return; }
