@@ -224,6 +224,15 @@
   .rv input { width: 90px; } .rv textarea { font: inherit; font-size: 15px; min-height: 64px; width: min(640px, 100%); padding: 8px 10px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--surface); color: var(--ink); }
   .rv .note-l { flex: 1 1 320px; } .rv .st { font-size: .84em; color: var(--good); }
   .batch { font-size: .86em; color: var(--ink-2); }
+  /* each submission: basic line always visible, full marking inside a dropdown */
+  .sum { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: .88em; color: var(--ink-2); margin-top: 8px; }
+  .more { margin-top: 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-3); }
+  .more > summary { cursor: pointer; padding: 8px 12px; font-weight: 600; font-size: .88em; color: var(--purple); list-style: none; display: flex; align-items: center; gap: 8px; }
+  .more > summary::-webkit-details-marker { display: none; }
+  .more > summary::before { content: "▸"; transition: transform .15s; } .more[open] > summary::before { transform: rotate(90deg); }
+  .more > summary:focus-visible { outline: 2px solid var(--purple); outline-offset: 2px; border-radius: 10px; }
+  .more > .mark { margin: 0; padding: 4px 12px 12px; border-top: 1px dashed var(--line-strong); background: var(--surface); border-radius: 0 0 10px 10px; }
+  .exp { display: flex; gap: 8px; margin: 0 0 10px; } .exp .btn { min-height: 34px; padding: 4px 12px; font-size: .85em; }
   /* class code: the only code students can submit under */
   .cc { margin-bottom: 14px; border-top: 4px solid var(--orange); display: grid; gap: 10px; }
   .cc-now { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; }
@@ -300,6 +309,7 @@
   </section>
   <section class="sheet" id="bai-nop" data-title="Bài nộp">
     <h2>Bài nộp</h2>
+    <div class="exp"><button class="btn" id="open-all" type="button">Mở hết chi tiết</button><button class="btn" id="close-all" type="button">Thu gọn hết</button></div>
     <div id="t-list" class="sub-list"></div>
   </section>
   <section class="sheet" id="cach-dung" data-group="HƯỚNG DẪN" data-title="Cách dùng trang">
@@ -555,11 +565,12 @@
         <div class="ans">${(r.answer || []).map(a => `<div>${a.label ? `<span class="lb">${esc(a.label)}</span>` : ''}${a.text ? esc(a.text) : '<span class="empty">(để trống)</span>'}</div>`).join('')}</div>
         ${markHtml(r)}</div>`;
   }
+  const openRows = new Set();   /* which dropdowns are open: kept when a row is redrawn */
   function markHtml(r) {
     const a = r.ai, v = r.review;
-    let h = '';
-    if (r.aiPending) h += `<p class="wait"><span class="spin" aria-hidden="true"></span>${a ? 'AI đang chấm lại bản hiện tại của bài…' : 'AI đang tự chấm (thường 15–30 giây)…'}</p>`;
-    else if (r.aiError) h += `<p class="wait fail">⚠ AI tự chấm chưa được (${esc(r.aiError)}). Bấm "AI chấm" để thử lại.</p>`;
+    let top = '', h = '';
+    if (r.aiPending) top += `<p class="wait"><span class="spin" aria-hidden="true"></span>${a ? 'AI đang chấm lại bản hiện tại của bài…' : 'AI đang tự chấm (thường 15–30 giây)…'}</p>`;
+    else if (r.aiError) top += `<p class="wait fail">⚠ AI tự chấm chưa được (${esc(r.aiError)}). Bấm "AI chấm" để thử lại.</p>`;
     if (a) {
       const cr = a.criteria || [], multi = (a.items || []).length > 1 || (a.items || []).some(i => i.label);
       const vc = t => t === 'Đúng' ? 'v-ok' : t === 'Gần đúng' ? 'v-mid' : 'v-bad';
@@ -594,7 +605,19 @@
         <label class="note-l">Nhận xét GV<textarea class="rv-note">${esc(v ? v.note : (a ? a.comment_vi : ''))}</textarea></label>
         <button class="btn pri rv-save" data-id="${r.id}" type="button">${v ? 'Lưu lại' : 'Duyệt và lưu'}</button>
         <span class="st">${v ? `✓ GV ${esc(v.by)} duyệt ${when(v.at)}: ${v.score10 != null ? `<span class="score gv">${fmt(v.score10)}<small>/10</small></span>` : 'chưa cho điểm'}` : ''}${r.reviewStale ? '<br><span class="stale">Học viên đã sửa bài sau khi GV duyệt: học viên chưa thấy nhận xét này cho bản mới, bấm Lưu lại để duyệt bản mới.</span>' : ''}</span></div>`;
-    return h ? `<div class="mark">${h}</div>` : '';
+    if (!h) return top;
+    /* basic line: AI mark, grade, verdicts, teacher mark, warnings */
+    const vs = a && a.level === 'sentence' ? (a.items || []).map(i => i.verdict).filter(Boolean) : [];
+    const vc = t => t === 'Đúng' ? 'v-ok' : t === 'Gần đúng' ? 'v-mid' : 'v-bad';
+    const sum = '<div class="sum">'
+      + (a ? `<span class="score">${fmt(a.score10)}<small>/10 AI</small></span>` : '')
+      + (a && a.grade ? `<span class="grade">${esc(a.grade)}</span>` : '')
+      + (vs.length ? `<span>${vs.map(t => `<span class="${vc(t)}">${esc(t)}</span>`).join(' · ')}</span>` : '')
+      + (a && (a.errors || []).length ? `<span>${a.errors.length} lỗi</span>` : '')
+      + (v && v.score10 != null ? `<span class="score gv">${fmt(v.score10)}<small>/10 GV</small></span>` : (v ? '<span class="v-ok">✓ GV đã duyệt</span>' : '<span class="muted">GV chưa duyệt</span>'))
+      + (a && (a.flags || []).length ? '<span class="stale">⚠ cần soát</span>' : '')
+      + (r.aiStale ? '<span class="stale">Đã sửa sau lần AI chấm</span>' : '') + '</div>';
+    return top + sum + `<details class="more" data-id="${r.id}"${openRows.has(r.id) ? ' open' : ''}><summary>Xem chi tiết chấm và duyệt điểm</summary><div class="mark">${h}</div></details>`;
   }
   function redraw(r) { const el = document.querySelector(`.sub-item[data-row="${r.id}"]`); if (el) el.outerHTML = itemHtml(r); }
   async function aiOne(r) {   /* puts the submission back in the AI queue; the workers mark it and autoRefresh shows it */
@@ -603,6 +626,9 @@
   }
   ['#f-cls', '#f-grp'].forEach(s => $(s).addEventListener('change', render));
   $('#f-q').addEventListener('input', render);
+  $('#t-list').addEventListener('toggle', e => { const d = e.target; if (!d.matches || !d.matches('details.more')) return; const id = Number(d.dataset.id); d.open ? openRows.add(id) : openRows.delete(id); }, true);
+  $('#open-all').onclick = () => document.querySelectorAll('#t-list details.more').forEach(d => d.open = true);
+  $('#close-all').onclick = () => document.querySelectorAll('#t-list details.more').forEach(d => d.open = false);
   $('#t-prog').addEventListener('click', e => { const b = e.target.closest('.namebtn'); if (!b) return; $('#f-q').value = b.dataset.k; render(); openSheet('bai-nop'); });
   $('#t-list').addEventListener('click', async e => {
     const ai = e.target.closest('.ai-one'), sv = e.target.closest('.rv-save');
